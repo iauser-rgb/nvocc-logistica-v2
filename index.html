@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVOCC Trade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+		background-color: white;
+		color: black;        }
+    </style>
+</head>
+<body class="p-6 font-sans">
+
+    <div class="max-w-7xl mx-auto">
+        
+        <header class="flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
+            <div class="flex items-center gap-3">
+		<span class="text-3xl"> 
+		    <img src="nvocc-v3.png" alt="NVOCC Logo" class="h-8 w-auto inline-block align-baseline"> 
+		</span>
+		<h1 class="text-2xl font-bold tracking-tight text-blue-400">NVOCC Trade</h1>
+            </div>
+            <div class="flex gap-3 items-center">
+                <button id="btnCargar" onclick="cargarDatos()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded shadow transition-all flex items-center gap-2">
+                    🔄 Cargar Datos
+                </button>
+                <button id="btnExportar" onclick="exportarExcel()" class="bg-green-700 hover:bg-green-800 text-white font-medium py-2 px-4 rounded shadow transition-all flex items-center gap-2">
+                    📊 Exportar Excel
+                </button>
+            
+                <div class="flex border border-gray-800 rounded overflow-hidden shadow">
+                    <input type="email" id="inputMailDestino" placeholder="enviar a@correo.com..." 
+                           class="bg-gray-950 px-3 py-2 text-sm text-white focus:outline-none w-48">
+                    <button onclick="enviarPorMail()" class="bg-purple-700 hover:bg-purple-800 text-white text-sm font-medium py-2 px-3 transition-all">
+                        📧 Enviar
+                    </button>
+                </div>
+
+                <button onclick="document.getElementById('panelMasivo').classList.toggle('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2 px-3 rounded">
+                    📝 Plantilla Masiva
+                </button>		
+            </div>
+        </header>
+
+        <div id="panelMasivo" class="bg-gray-900 p-4 rounded-xl shadow-lg border border-purple-900/30 mb-6 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-purple-400 font-bold flex items-center gap-2">🚀 Envío Masivo Individual</h3>
+                <button onclick="document.getElementById('panelMasivo').classList.add('hidden')" class="text-gray-500 hover:text-white">✕</button>
+            </div>
+
+            <div class="grid gap-3">
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1 font-medium">Seleccionar una plantilla precargada:</label>
+                    <select id="selectorPlantillas" onchange="cambiarPlantilla()" class="w-full bg-gray-950 border border-gray-800 rounded px-3 py-2 text-white text-sm focus:outline-none">
+                        <option value="" disabled selected>-- Elegí una plantilla --</option>
+                        <option value="comercio">Comercio Internacional (Presentación)</option>
+                        <option value="seguimiento">Seguimiento de Operación / Estado</option>
+                        <option value="deuda">Aviso de Saldos / Facturación</option>
+                    </select>
+                </div>
+
+                <input type="text" id="asuntoMasivo" placeholder="Asunto del correo..." 
+                       class="w-full bg-gray-950 border border-gray-800 rounded px-3 py-2 text-white">
+                
+                <textarea id="cuerpoMasivo" rows="5" placeholder="Escribí o seleccioná una plantilla..." 
+                          class="w-full bg-gray-950 border border-gray-800 rounded px-3 py-2 text-white text-sm whitespace-pre-wrap"></textarea>
+                
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-gray-500">Usa <b>{{CLIENTE}}</b> para personalizar el nombre de cada empresa.</span>
+                    <div class="flex gap-2 justify-end">
+                        <button onclick="procesarEnvioMasivo()" class="bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded shadow transition-all text-sm">
+                            📧 Enviar por Mail
+                        </button>
+                        <button onclick="procesarWhatsAppMasivo()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow transition-all text-sm flex items-center gap-1">
+                            💬 Enviar por WhatsApp
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-900 p-4 rounded-xl shadow-lg border border-gray-800 mb-6">
+            <div class="flex gap-3">
+                <input type="text" id="inputPedido" placeholder="Dame las impo de Marzo 2026..." 
+                       class="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition-all">
+                <button onclick="preguntarIA()" class="bg-purple-700 hover:bg-purple-800 text-white font-semibold px-6 py-3 rounded-lg shadow transition-all whitespace-nowrap flex items-center gap-2">
+                    🚀 Preguntar IA
+                </button>
+            </div>
+            <div id="statusIA" class="text-sm text-gray-500 mt-2 hidden flex items-center gap-2">
+                <span>⏳</span> Conectando con la IA y procesando consulta...
+            </div>
+        </div>
+
+        <div class="bg-gray-900 rounded-xl shadow-lg border border-gray-800 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse" id="tablaPrincipal">
+                    <thead id="tablaCabecera">
+                        <tr class="bg-gray-950 text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
+                            <th class="p-4">Operación</th>
+                            <th class="p-4">Documento</th>
+                            <th class="p-4">Despachante</th>
+                            <th class="p-4">Peso</th>
+                            <th class="p-4">Bultos</th>
+                            <th class="p-4">Flete</th>
+                            <th class="p-4">Fecha</th>
+                            <th class="p-4">Cliente</th>
+                            <th class="p-4">Embarque</th>
+                            <th class="p-4">Destino</th>
+                            <th class="p-4">Transportista</th>
+                            <th class="p-4">Tipo</th>
+                            <th class="p-4">Modo</th>
+                            <th class="p-4">Origen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaCuerpo" class="divide-y divide-gray-800 text-sm text-gray-300">
+                        <tr>
+                            <td colspan="14" id="celdaMensaje Inicial" class="p-8 text-center text-gray-500 italic">
+                                Ningún dato cargado aún. Hacé clic en "Cargar Datos" para iniciar.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const BACKEND_URL = "https://nvocc-backend-v2-982561523877.us-central1.run.app";
+
+        // Diccionario con las plantillas precargadas
+        const PLANTILLAS_PRECARGADAS = {
+            comercio: {
+                asunto: "La mejor solución de comercio internacional para tu empresa",
+                cuerpo: "Estimado {{CLIENTE}}\n\nMe contacto con ud. para ofrecerle la mejor solución de comercio internacional.\n\nSaludos\nNVOCC"
+            },
+            seguimiento: {
+                asunto: "Actualización de Estado de Operación - NVOCC",
+                cuerpo: "Estimado {{CLIENTE}}\n\nNos comunicamos para informarle que estamos procesando sus últimas operaciones aduaneras de forma prioritaria. Nos mantendremos en contacto ante cualquier novedad.\n\nAtentamente,\nEquipo NVOCC"
+            },
+            deuda: {
+                asunto: "Estado de Cuenta y Facturación - Logística NVOCC",
+                cuerpo: "Estimado {{CLIENTE}}\n\nLe escribimos para recordarle verificar el estado de sus últimas liquidaciones pendientes de facturación en nuestro portal operativo.\n\nSaludos cordiales,\nAdministración NVOCC"
+            }
+        };
+
+        // Función que se ejecuta al cambiar la opción del desplegable
+        function cambiarPlantilla() {
+            const selector = document.getElementById("selectorPlantillas");
+            const seleccionada = selector.value;
+            
+            if (PLANTILLAS_PRECARGADAS[seleccionada]) {
+                document.getElementById("asuntoMasivo").value = PLANTILLAS_PRECARGADAS[seleccionada].asunto;
+                document.getElementById("cuerpoMasivo").value = PLANTILLAS_PRECARGADAS[seleccionada].cuerpo;
+            }
+        }
+
+        // Función para renderizar de forma 100% dinámica cabeceras y celdas
+        function renderizarTabla(datos) {
+            const cabecera = document.getElementById("tablaCabecera");
+            const cuerpo = document.getElementById("tablaCuerpo");
+            
+            cuerpo.innerHTML = "";
+            cabecera.innerHTML = "";
+
+            if (!datos || datos.length === 0) {
+                cabecera.innerHTML = `<tr class="bg-gray-950 text-gray-400 text-xs uppercase border-b border-gray-800"><th class="p-4">Resultado</th></tr>`;
+                cuerpo.innerHTML = `<tr><td class="p-8 text-center text-yellow-600 font-medium">No se encontraron registros para esta consulta.</td></tr>`;
+                return;
+            }
+
+            const columnasReales = Object.keys(datos[0]);
+
+            // 1. Encabezados
+            const filaCabecera = document.createElement("tr");
+            filaCabecera.className = "bg-gray-950 text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800";
+            
+            columnasReales.forEach(col => {
+                const th = document.createElement("th");
+                th.className = "p-4";
+                th.innerText = col;
+                filaCabecera.appendChild(th);
+            });
+            cabecera.appendChild(filaCabecera);
+
+            // 2. Filas de datos
+            datos.forEach(reg => {
+                const fila = document.createElement("tr");
+                fila.className = "hover:bg-gray-800/50 transition-colors";
+                
+                columnasReales.forEach(col => {
+                    const td = document.createElement("td");
+                    td.className = "p-4";
+                    const valor = reg[col] !== undefined && reg[col] !== null ? reg[col] : "";
+
+                    if (col === "OPERACION") {
+                        td.className += " font-mono text-blue-400";
+                    } else if (["PESO", "BULTOS", "FLETE"].includes(col)) {
+                        td.className += " font-mono";
+                    } else if (col === "CLIENTE") {
+                        td.className += " truncate max-w-[200px]";
+                    } else if (col === "TRANSPORTISTA" || col === "DESPACHANTE") {
+                        td.className += " truncate max-w-[150px]";
+                    } else if (col === "TIPO") {
+                        td.innerHTML = `<span class="px-2 py-0.5 rounded text-xs ${valor === 'IMPO' ? 'bg-indigo-950 text-indigo-400' : 'bg-amber-950 text-amber-400'}">${valor}</span>`;
+                        fila.appendChild(td);
+                        return;
+                    }
+                    
+                    td.innerText = valor;
+                    fila.appendChild(td);
+                });
+                
+                cuerpo.appendChild(fila);
+            });
+        }
+
+        async function cargarDatos() {
+            const btn = document.getElementById("btnCargar");
+            btn.innerText = "⏳ Cargando...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/cargar-inicial`);
+                if (!response.ok) throw new Error(`Error de servidor: ${response.status}`);
+                
+                const datos = await response.json();
+                renderizarTabla(datos);
+            } catch (err) {
+                alert(`Error al cargar datos desde BigQuery: ${err.message}`);
+            } finally {
+                btn.innerText = "🔄 Cargar Datos";
+                btn.disabled = false;
+            }
+        }
+
+        async function preguntarIA() {
+            const input = document.getElementById("inputPedido");
+            const status = document.getElementById("statusIA");
+            const pedido = input.value.trim();
+
+            if (!pedido) {
+                alert("Por favor, ingresá una consulta para la IA.");
+                return;
+            }
+
+            status.classList.remove("hidden");
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/consultar-ia`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ pedido: pedido })
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.detail || `Código HTTP ${response.status}`);
+                }
+
+                const datosFiltrados = await response.json();
+                renderizarTabla(datosFiltrados);
+            } catch (err) {
+                alert(`Error: ${err.message}`);
+            } finally {
+                status.classList.add("hidden");
+            }
+        }
+
+        function exportarExcel() {
+            const cuerpo = document.getElementById("tablaCuerpo");
+            if (cuerpo.innerText.includes("Ningún dato") || cuerpo.innerText.includes("No se encontraron")) {
+                alert("No hay datos en pantalla para exportar.");
+                return;
+            }
+            alert("Función de exportación lista.");
+        }
+
+        async function enviarPorMail() {
+            const inputEmail = document.getElementById("inputMailDestino");
+            const correo = inputEmail.value.trim();
+        
+            if (!correo) {
+                alert("Por favor, ingresá un correo electrónico válido de destino.");
+                return;
+            }
+        
+            try {
+                const response = await fetch(`${BACKEND_URL}/enviar-contactos-email`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ correo_destino: correo })
+                });
+        
+                const resultado = await response.json();
+        
+                if (!response.ok) {
+                    throw new Error(resultado.detail || "Error desconocido al enviar.");
+                }
+        
+                alert(resultado.message);
+                inputEmail.value = "";
+            } catch (err) {
+                alert(`Error: ${err.message}`);
+            }
+        }
+
+        async function procesarEnvioMasivo() {
+            const asunto = document.getElementById("asuntoMasivo").value.trim();
+            const plantilla = document.getElementById("cuerpoMasivo").value.trim();
+        
+            if (!asunto || !plantilla) {
+                alert("Por favor completá el asunto y el mensaje.");
+                return;
+            }
+        
+            if (!confirm("¿Estás seguro de enviar este correo a todos los clientes filtrados en pantalla?")) return;
+        
+            try {
+                const response = await fetch(`${BACKEND_URL}/enviar-masivo-plantilla`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ asunto: asunto, plantilla: plantilla })
+                });
+        
+                const res = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(res.detail || "Error interno del servidor");
+                }
+        
+                alert(res.message || "¡Envío masivo completado!");
+                document.getElementById('panelMasivo').classList.add('hidden');
+            } catch (err) {
+                alert("Error en el envío masivo: " + err.message);
+            }
+        }
+
+        function procesarWhatsAppMasivo() {
+            const plantilla = document.getElementById("cuerpoMasivo").value.trim();
+        
+            if (!plantilla) {
+                alert("Por favor escribí o seleccioná una plantilla de mensaje.");
+                return;
+            }
+        
+            const filas = document.querySelectorAll("#tablaCuerpo tr");
+            
+            if (filas.length === 0 || filas[0].innerText.includes("Ningún dato") || filas[0].innerText.includes("No se encontraron")) {
+                alert("No hay contactos en pantalla para enviar mensajes.");
+                return;
+            }
+        
+            const encabezados = Array.from(document.querySelectorAll("#tablaCabecera th")).map(th => th.innerText.toUpperCase());
+            const idxCliente = encabezados.indexOf("CLIENTE");
+            const idxTelefono = encabezados.indexOf("TELEFONO");
+        
+            if (idxCliente === -1 || idxTelefono === -1) {
+                alert("La tabla actual debe tener las columnas CLIENTE y TELEFONO en pantalla.");
+                return;
+            }
+        
+            let enviados = 0;
+        
+            if (!confirm(`¿Querés abrir las pestañas de WhatsApp para los clientes filtrados en pantalla?`)) return;
+        
+            filas.forEach(fila => {
+                const celdas = fila.querySelectorAll("td");
+                if (celdas.length <= Math.max(idxCliente, idxTelefono)) return;
+        
+                const nombreCliente = celdas[idxCliente].innerText.trim();
+                let rawTelefono = celdas[idxTelefono].innerText.trim();
+        
+                if (!rawTelefono || rawTelefono.toLowerCase().includes("sin")) return;
+        
+                const mensajePersonalizado = plantilla.replace("{{CLIENTE}}", nombreCliente);
+                let telefonoLimpio = rawTelefono.replace(/\D/g, "");
+        
+                if (telefonoLimpio) {
+                    const textoUrl = encodeURIComponent(mensajePersonalizado);
+                    const urlWhatsApp = `https://wa.me/${telefonoLimpio}?text=${textoUrl}`;
+                    
+                    window.open(urlWhatsApp, '_blank');
+                    enviados++;
+                }
+            });
+        
+            alert(`Se abrieron ${enviados} pestañas de WhatsApp Web.`);
+        }
+    </script>
+</body>
+</html>

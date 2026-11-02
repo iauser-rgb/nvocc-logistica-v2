@@ -549,6 +549,13 @@ async def enviar_masivo_plantilla(data: PedidoEnvioMasivo):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error en el servidor de correo: {str(e)}")
 
+@app.get("/nvocc-v2.png")
+def obtener_logo():
+    ruta_logo = os.path.join(os.path.dirname(__file__), "nvocc-v2.png")
+    if os.path.exists(ruta_logo):
+        return FileResponse(ruta_logo)
+    raise HTTPException(status_code=404, detail="Logo no encontrado")
+
 if __name__ == "__main__":
     import uvicorn
     puerto = int(os.environ.get("PORT", 8080))

@@ -4,23 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NVOCC Trade</title>
+    <link rel="icon" href="data:,">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-		background-color: white;
-		color: black;        }
+            background-color: #ffffff;
+            color: #000000;
+        }
+        /* Scroll suave para el historial de chat */
+        #historialChat {
+            scroll-behavior: smooth;
+        }
     </style>
 </head>
 <body class="p-6 font-sans">
 
     <div class="max-w-7xl mx-auto">
         
-        <header class="flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
+        <header class="flex justify-between items-center mb-8 border-b border-gray-300 pb-4">
             <div class="flex items-center gap-3">
-		<span class="text-3xl"> 
-		    <img src="nvocc-v3.png" alt="NVOCC Logo" class="h-8 w-auto inline-block align-baseline"> 
-		</span>
-		<h1 class="text-2xl font-bold tracking-tight text-blue-400">NVOCC Trade</h1>
+                <span class="text-3xl"> 
+		    <span style="font-size: 1.8rem; margin-right: 8px;">🚢</span>
+                </span>
+                <h1 class="text-2xl font-bold tracking-tight text-blue-600">NVOCC Trade</h1>
             </div>
             <div class="flex gap-3 items-center">
                 <button id="btnCargar" onclick="cargarDatos()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded shadow transition-all flex items-center gap-2">
@@ -30,9 +36,9 @@
                     📊 Exportar Excel
                 </button>
             
-                <div class="flex border border-gray-800 rounded overflow-hidden shadow">
+                <div class="flex border border-gray-300 rounded overflow-hidden shadow">
                     <input type="email" id="inputMailDestino" placeholder="enviar a@correo.com..." 
-                           class="bg-gray-950 px-3 py-2 text-sm text-white focus:outline-none w-48">
+                           class="bg-white px-3 py-2 text-sm text-black focus:outline-none w-48">
                     <button onclick="enviarPorMail()" class="bg-purple-700 hover:bg-purple-800 text-white text-sm font-medium py-2 px-3 transition-all">
                         📧 Enviar
                     </button>
@@ -44,16 +50,16 @@
             </div>
         </header>
 
-        <div id="panelMasivo" class="bg-gray-900 p-4 rounded-xl shadow-lg border border-purple-900/30 mb-6 hidden">
+        <div id="panelMasivo" class="bg-white p-4 rounded-xl shadow-lg border border-purple-200 mb-6 hidden">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-purple-400 font-bold flex items-center gap-2">🚀 Envío Masivo Individual</h3>
-                <button onclick="document.getElementById('panelMasivo').classList.add('hidden')" class="text-gray-500 hover:text-white">✕</button>
+                <h3 class="text-purple-700 font-bold flex items-center gap-2">🚀 Envío Masivo Individual</h3>
+                <button onclick="document.getElementById('panelMasivo').classList.add('hidden')" class="text-gray-400 hover:text-black">✕</button>
             </div>
 
             <div class="grid gap-3">
                 <div>
-                    <label class="text-xs text-gray-400 block mb-1 font-medium">Seleccionar una plantilla precargada:</label>
-                    <select id="selectorPlantillas" onchange="cambiarPlantilla()" class="w-full bg-gray-950 border border-gray-800 rounded px-3 py-2 text-white text-sm focus:outline-none">
+                    <label class="text-xs text-gray-600 block mb-1 font-medium">Seleccionar una plantilla precargada:</label>
+                    <select id="selectorPlantillas" onchange="cambiarPlantilla()" class="w-full bg-white border border-gray-300 rounded px-3 py-2 text-black text-sm focus:outline-none">
                         <option value="" disabled selected>-- Elegí una plantilla --</option>
                         <option value="comercio">Comercio Internacional (Presentación)</option>
                         <option value="seguimiento">Seguimiento de Operación / Estado</option>
@@ -62,10 +68,10 @@
                 </div>
 
                 <input type="text" id="asuntoMasivo" placeholder="Asunto del correo..." 
-                       class="w-full bg-gray-950 border border-gray-800 rounded px-3 py-2 text-white">
+                       class="w-full bg-white border border-gray-300 rounded px-3 py-2 text-black">
                 
                 <textarea id="cuerpoMasivo" rows="5" placeholder="Escribí o seleccioná una plantilla..." 
-                          class="w-full bg-gray-950 border border-gray-800 rounded px-3 py-2 text-white text-sm whitespace-pre-wrap"></textarea>
+                          class="w-full bg-white border border-gray-300 rounded px-3 py-2 text-black text-sm whitespace-pre-wrap"></textarea>
                 
                 <div class="flex justify-between items-center">
                     <span class="text-xs text-gray-500">Usa <b>{{CLIENTE}}</b> para personalizar el nombre de cada empresa.</span>
@@ -81,24 +87,28 @@
             </div>
         </div>
 
-        <div class="bg-gray-900 p-4 rounded-xl shadow-lg border border-gray-800 mb-6">
-            <div class="flex gap-3">
-                <input type="text" id="inputPedido" placeholder="Dame las impo de Marzo 2026..." 
-                       class="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition-all">
-                <button onclick="preguntarIA()" class="bg-purple-700 hover:bg-purple-800 text-white font-semibold px-6 py-3 rounded-lg shadow transition-all whitespace-nowrap flex items-center gap-2">
-                    🚀 Preguntar IA
-                </button>
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 mb-6 flex flex-col overflow-hidden">
+            <div id="historialChat" class="p-4 h-48 overflow-y-auto bg-gray-50 flex flex-col gap-3 border-b border-gray-200">
+                <div class="bg-blue-50 text-blue-800 text-sm p-3 rounded-lg max-w-2xl self-start shadow-sm">
+                    🤖 <b>NVOCC Asistente:</b> ¡Hola! Podés consultarme lo que necesites sobre las operaciones (ej: <i>"Mostrame las impo de este mes"</i>). Las respuestas y tablas se actualizarán acá abajo.
+                </div>
             </div>
-            <div id="statusIA" class="text-sm text-gray-500 mt-2 hidden flex items-center gap-2">
-                <span>⏳</span> Conectando con la IA y procesando consulta...
+            
+            <div class="p-3 bg-white flex gap-3">
+                <input type="text" id="inputPedido" placeholder="Escribí tu consulta a la IA acá... (Presioná Enter para enviar)" 
+                       onkeydown="if(event.key === 'Enter') preguntarIA()"
+                       class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-black focus:outline-none focus:border-blue-500 transition-all">
+                <button onclick="preguntarIA()" class="bg-purple-700 hover:bg-purple-800 text-white font-semibold px-6 py-3 rounded-lg shadow transition-all whitespace-nowrap flex items-center gap-2">
+                    🚀 Enviar
+                </button>
             </div>
         </div>
 
-        <div class="bg-gray-900 rounded-xl shadow-lg border border-gray-800 overflow-hidden">
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse" id="tablaPrincipal">
                     <thead id="tablaCabecera">
-                        <tr class="bg-gray-950 text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
+                        <tr class="bg-gray-100 text-gray-700 text-xs uppercase tracking-wider border-b border-gray-200">
                             <th class="p-4">Operación</th>
                             <th class="p-4">Documento</th>
                             <th class="p-4">Despachante</th>
@@ -115,10 +125,10 @@
                             <th class="p-4">Origen</th>
                         </tr>
                     </thead>
-                    <tbody id="tablaCuerpo" class="divide-y divide-gray-800 text-sm text-gray-300">
+                    <tbody id="tablaCuerpo" class="divide-y divide-gray-200 text-sm text-gray-800">
                         <tr>
-                            <td colspan="14" id="celdaMensaje Inicial" class="p-8 text-center text-gray-500 italic">
-                                Ningún dato cargado aún. Hacé clic en "Cargar Datos" para iniciar.
+                            <td colspan="14" id="celdaMensajeInicial" class="p-8 text-center text-gray-400 italic">
+                                Ningún dato cargado aún. Hacé clic en "Cargar Datos" o consultá a la IA para iniciar.
                             </td>
                         </tr>
                     </tbody>
@@ -131,7 +141,6 @@
     <script>
         const BACKEND_URL = "https://nvocc-backend-v2-982561523877.us-central1.run.app";
 
-        // Diccionario con las plantillas precargadas
         const PLANTILLAS_PRECARGADAS = {
             comercio: {
                 asunto: "La mejor solución de comercio internacional para tu empresa",
@@ -147,7 +156,6 @@
             }
         };
 
-        // Función que se ejecuta al cambiar la opción del desplegable
         function cambiarPlantilla() {
             const selector = document.getElementById("selectorPlantillas");
             const seleccionada = selector.value;
@@ -158,7 +166,6 @@
             }
         }
 
-        // Función para renderizar de forma 100% dinámica cabeceras y celdas
         function renderizarTabla(datos) {
             const cabecera = document.getElementById("tablaCabecera");
             const cuerpo = document.getElementById("tablaCuerpo");
@@ -167,16 +174,15 @@
             cabecera.innerHTML = "";
 
             if (!datos || datos.length === 0) {
-                cabecera.innerHTML = `<tr class="bg-gray-950 text-gray-400 text-xs uppercase border-b border-gray-800"><th class="p-4">Resultado</th></tr>`;
+                cabecera.innerHTML = `<tr class="bg-gray-100 text-gray-700 text-xs uppercase border-b border-gray-200"><th class="p-4">Resultado</th></tr>`;
                 cuerpo.innerHTML = `<tr><td class="p-8 text-center text-yellow-600 font-medium">No se encontraron registros para esta consulta.</td></tr>`;
                 return;
             }
 
             const columnasReales = Object.keys(datos[0]);
 
-            // 1. Encabezados
             const filaCabecera = document.createElement("tr");
-            filaCabecera.className = "bg-gray-950 text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800";
+            filaCabecera.className = "bg-gray-100 text-gray-700 text-xs uppercase tracking-wider border-b border-gray-200";
             
             columnasReales.forEach(col => {
                 const th = document.createElement("th");
@@ -186,10 +192,9 @@
             });
             cabecera.appendChild(filaCabecera);
 
-            // 2. Filas de datos
             datos.forEach(reg => {
                 const fila = document.createElement("tr");
-                fila.className = "hover:bg-gray-800/50 transition-colors";
+                fila.className = "hover:bg-gray-50 transition-colors";
                 
                 columnasReales.forEach(col => {
                     const td = document.createElement("td");
@@ -197,7 +202,7 @@
                     const valor = reg[col] !== undefined && reg[col] !== null ? reg[col] : "";
 
                     if (col === "OPERACION") {
-                        td.className += " font-mono text-blue-400";
+                        td.className += " font-mono text-blue-600";
                     } else if (["PESO", "BULTOS", "FLETE"].includes(col)) {
                         td.className += " font-mono";
                     } else if (col === "CLIENTE") {
@@ -205,7 +210,7 @@
                     } else if (col === "TRANSPORTISTA" || col === "DESPACHANTE") {
                         td.className += " truncate max-w-[150px]";
                     } else if (col === "TIPO") {
-                        td.innerHTML = `<span class="px-2 py-0.5 rounded text-xs ${valor === 'IMPO' ? 'bg-indigo-950 text-indigo-400' : 'bg-amber-950 text-amber-400'}">${valor}</span>`;
+                        td.innerHTML = `<span class="px-2 py-0.5 rounded text-xs ${valor === 'IMPO' ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700'}">${valor}</span>`;
                         fila.appendChild(td);
                         return;
                     }
@@ -237,17 +242,30 @@
             }
         }
 
+        // NUEVA FUNCIÓN: Envía el mensaje, actualiza la pantalla tipo chat y limpia la casilla
         async function preguntarIA() {
             const input = document.getElementById("inputPedido");
-            const status = document.getElementById("statusIA");
+            const historial = document.getElementById("historialChat");
             const pedido = input.value.trim();
 
-            if (!pedido) {
-                alert("Por favor, ingresá una consulta para la IA.");
-                return;
-            }
+            if (!pedido) return;
 
-            status.classList.remove("hidden");
+            // 1. Agregar la pregunta del usuario al historial en pantalla
+            const burbujaUsuario = document.createElement("div");
+            burbujaUsuario.className = "bg-purple-600 text-white text-sm p-3 rounded-lg max-w-2xl self-end shadow-sm";
+            burbujaUsuario.innerHTML = `👤 <b>Vos:</b> ${pedido}`;
+            historial.appendChild(burbujaUsuario);
+
+            // Agregar un indicador temporal de carga en el chat
+            const burbujaCarga = document.createElement("div");
+            burbujaCarga.className = "bg-gray-200 text-gray-600 text-sm p-3 rounded-lg max-w-xs self-start italic shadow-sm animate-pulse";
+            burbujaCarga.id = "burbujaTempCarga";
+            burbujaCarga.innerText = "⏳ Pensando y buscando datos...";
+            historial.appendChild(burbujaCarga);
+
+            // Limpiar la casilla para que el usuario pueda seguir escribiendo de inmediato
+            input.value = "";
+            historial.scrollTop = historial.scrollHeight; // Auto-scroll al fondo
 
             try {
                 const response = await fetch(`${BACKEND_URL}/api/consultar-ia`, {
@@ -256,17 +274,35 @@
                     body: JSON.stringify({ pedido: pedido })
                 });
 
+                // Remover la burbuja temporal de carga
+                document.getElementById("burbujaTempCarga")?.remove();
+
                 if (!response.ok) {
                     const errData = await response.json().catch(() => ({}));
                     throw new Error(errData.detail || `Código HTTP ${response.status}`);
                 }
 
                 const datosFiltrados = await response.json();
+                
+                // 2. Agregar la respuesta de éxito de la IA al historial
+                const burbujaIA = document.createElement("div");
+                burbujaIA.className = "bg-blue-50 text-blue-800 text-sm p-3 rounded-lg max-w-2xl self-start shadow-sm";
+                burbujaIA.innerHTML = `🤖 <b>NVOCC Asistente:</b> Entendido. Encontré <b>${datosFiltrados.length} registros</b> vinculados a tu consulta. Podés verlos en la tabla abajo.`;
+                historial.appendChild(burbujaIA);
+
+                // 3. Renderizar la grilla con los nuevos datos devueltos
                 renderizarTabla(datosFiltrados);
+
             } catch (err) {
-                alert(`Error: ${err.message}`);
+                document.getElementById("burbujaTempCarga")?.remove();
+                
+                // Agregar la burbuja de error al chat
+                const burbujaError = document.createElement("div");
+                burbujaError.className = "bg-red-100 text-red-800 text-sm p-3 rounded-lg max-w-2xl self-start shadow-sm";
+                burbujaError.innerHTML = `⚠️ <b>Error Asistente:</b> No pude procesar tu solicitud. Motivo: ${err.message}`;
+                historial.appendChild(burbujaError);
             } finally {
-                status.classList.add("hidden");
+                historial.scrollTop = historial.scrollHeight; // Auto-scroll final
             }
         }
 

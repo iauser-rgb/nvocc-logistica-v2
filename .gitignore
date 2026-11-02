@@ -1,0 +1,37 @@
+# Seguridad (Crítico)
+*.json
+.env
+
+# Entornos virtuales y compilaciones
+venv/
+.venv/
+env/
+build/
+dist/
+__pycache__/
+*.pyc
+*.spec
+
+# Archivos de datos locales y notas
+*.csv
+*.txt
+activate
+pyside6-designer
+desktop.ini
+Procfile
+Dockerfile
+environment.nix
+
+# Archivos de respaldo y versiones viejas
+main*.py
+!main.py
+index*.html
+!index.html
+index*.txt
+Proyect.gitignore
+database.py
+migrador.py
+principal.ui
+ventana.py
+index_archivos/
+*.jpg
